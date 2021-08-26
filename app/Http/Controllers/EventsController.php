@@ -191,6 +191,20 @@ class EventsController extends BaseController
      */
 
     public function getFutureEventsWithWorkshops() {
-        throw new \Exception('implement in coding task 2');
+        $events = Event::WhereRaw('id in (SELECT event_id FROM `workshops` WHERE START >= now())')->get()->toArray();
+        $workshops = Workshop::WhereRaw('start >= now()')->get()->toArray();
+
+        foreach ($events as $eKey => $e) {
+            $events[$eKey]['workshops'] = array();
+            foreach($workshops as $w){
+                if ($e['id'] == $w['event_id']){
+                    $events[$eKey]['workshops'][] = $w;
+                }
+                
+            }            
+        }
+
+        return response()->json($events);
+        //throw new \Exception('implement in coding task 2');
     }
 }
