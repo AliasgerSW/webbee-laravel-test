@@ -94,7 +94,39 @@ class MenuController extends BaseController
     ]
      */
 
+    public function getChildrens(&$menus, $parent_id = 0)
+    {
+        $child_menu = array();
+        foreach ( $menus as $key => $mi) {
+            if (!empty($mi['parent_id']) && $mi['parent_id'] == $parent_id) {
+                $mi['children'] = $this->getChildrens($menus, $key);
+                $child_menu[] = $mi;
+                unset($menus[$key]);
+            }
+        }
+        
+        return $child_menu;
+    }
+
     public function getMenuItems() {
-        throw new \Exception('implement in coding task 3');
+        $menuitems = MenuItem::all()->toArray();
+        $menus = array();
+        foreach($menuitems as $key => $mi){
+            $menus[$mi['id']] = $mi;
+        }
+        foreach($menus as $key => $m){
+            $menus[$key]['children'] = $this->getChildrens($menus, $key);
+        }
+        foreach($menus as $key => $m){
+            if (empty($m['id'])){
+                unset($menus[$key]);
+            }
+        }
+
+        $menuitems = array_values($menus);
+
+        return response()->json($menuitems);        
+
+        //throw new \Exception('implement in coding task 3');
     }
 }
